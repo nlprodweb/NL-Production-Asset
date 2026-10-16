@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0f19" />
+  <meta name="description" content="NL Production — katalog rilisan aset Trainz Simulator." />
+  <title>NL Production | Trainz Asset Release</title>
+  <link rel="stylesheet" href="Style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="Script.js" defer></script>
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-container">
+      <a class="logo" href="#beranda" aria-label="NL Production beranda">
+        <i class="fa-solid fa-train-subway" aria-hidden="true"></i>
+        <span>NL<span>PRODUCTION</span></span>
+      </a>
+      <nav class="role-switcher" aria-label="Mode tampilan">
+        <button class="role-btn active" id="btn-role-user" type="button" data-role="user"><i class="fa-solid fa-compass"></i> Mode Pengunjung</button>
+        <button class="role-btn" id="btn-role-admin" type="button" data-role="admin"><i class="fa-solid fa-lock"></i> Mode Admin</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-wrapper">
+    <section id="user-view" class="view-section active">
+      <section class="hero-card" id="beranda">
+        <div class="hero-content">
+          <span class="hero-badge"><i class="fa-solid fa-cube"></i> NL Production · Official Release</span>
+          <h1>NL Production<br />Katalog Asset Trainz</h1>
+          <p>Etalase rilisan aset Trainz Simulator buatan NL Production. Jelajahi Gerbong Datar (GD), Gerbong Ballast (GB), dan Commodity, lalu buka folder unduhan sesuai rilisan yang tersedia.</p>
+        </div>
+      </section>
+
+      <section class="catalog-controls" aria-label="Filter dan pencarian katalog">
+        <div class="filter-bar">
+          <span class="filter-title"><i class="fa-solid fa-filter"></i> Filter Asset:</span>
+          <div class="filter-pills" role="group" aria-label="Kategori aset">
+            <button class="pill-btn active" type="button" data-filter="all">Semua Asset <span class="filter-count" id="count-all">00</span></button>
+            <button class="pill-btn" type="button" data-filter="GD">Gerbong Datar (GD) <span class="filter-count" id="count-gd">00</span></button>
+            <button class="pill-btn" type="button" data-filter="GB">Gerbong Barang (GB) <span class="filter-count" id="count-gb">00</span></button>
+            <button class="pill-btn" type="button" data-filter="Commodity">Commodity <span class="filter-count" id="count-commodity">00</span></button>
+          </div>
+        </div>
+        <div class="search-row">
+          <label class="search-box" for="catalog-search">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input id="catalog-search" type="search" placeholder="Cari nama aset, kategori, atau subfolder..." autocomplete="off" />
+            <kbd>/</kbd>
+          </label>
+          <span class="catalog-count" id="catalog-count">Menampilkan 00 aset</span>
+        </div>
+      </section>
+
+      <div class="asset-grid" id="asset-grid" aria-live="polite"></div>
+      <div class="empty-state" id="empty-assets" hidden>
+        <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
+        <h3>Aset tidak ditemukan</h3>
+        <p>Coba kata kunci lain atau reset pencarian dan filter kategori.</p>
+        <button type="button" class="btn-secondary" id="reset-catalog">Reset pencarian</button>
+      </div>
+
+      <section class="public-note">
+        <div class="public-note-icon"><i class="fa-solid fa-circle-info"></i></div>
+        <div><strong>Informasi rilisan</strong><p>Link yang berstatus Coming Soon belum bisa dibuka. Informasi versi, kompatibilitas, dan detail aset ditampilkan pada tombol detail setiap rilisan.</p></div>
+      </section>
+    </section>
+
+    <section id="admin-view" class="view-section" aria-label="Panel admin">
+      <div class="admin-top-bar">
+        <div>
+          <span class="hero-badge admin-badge"><i class="fa-solid fa-sliders"></i> Admin Workspace</span>
+          <h2>Panel Pengelola Asset</h2>
+          <p>Kelola informasi rilisan, status publikasi, tautan Drive, dan subfolder commodity.</p>
+        </div>
+        <div class="admin-actions-bar">
+          <button class="btn-primary" id="add-asset-btn" type="button"><i class="fa-solid fa-plus"></i> Tambah Asset Baru</button>
+          <button class="btn-danger-outline" id="logout-btn" type="button"><i class="fa-solid fa-right-from-bracket"></i> Keluar Admin</button>
+        </div>
+      </div>
+
+      <div class="admin-stats" aria-label="Ringkasan katalog">
+        <div class="admin-stat"><span>Total aset</span><strong id="stat-total">00</strong></div>
+        <div class="admin-stat"><span>Ditampilkan publik</span><strong id="stat-published">00</strong></div>
+        <div class="admin-stat"><span>Draft / tersembunyi</span><strong id="stat-draft">00</strong></div>
+        <div class="admin-stat"><span>Total folder tujuan</span><strong id="stat-folders">00</strong></div>
+      </div>
+
+      <div class="admin-tools">
+        <label class="search-box" for="admin-search"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input id="admin-search" type="search" placeholder="Cari aset di panel admin..." autocomplete="off" /></label>
+        <label class="admin-status-filter">Status publikasi
+          <select id="admin-publish-filter"><option value="all">Semua status</option><option value="published">Publik</option><option value="draft">Draft</option></select>
+        </label>
+      </div>
+
+      <div class="table-card">
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead><tr><th>#</th><th>Kategori</th><th>Nama Asset</th><th>Folder</th><th>Ketersediaan</th><th>Publikasi</th><th style="text-align:center">Aksi</th></tr></thead>
+            <tbody id="admin-table-body"></tbody>
+          </table>
+        </div>
+        <p class="admin-empty" id="admin-empty" hidden>Tidak ada aset yang cocok dengan pencarian atau filter ini.</p>
+      </div>
+      <p class="admin-note"><i class="fa-solid fa-hard-drive"></i> Katalog disinkronkan melalui Google Apps Script dan Google Sheets. Pastikan URL Web App sudah dipasang pada Script.js.</p>
+    </section>
+  </main>
+
+  <footer class="footer"><p>© <span id="current-year">2026</span> NL Production. Trainz Asset Release.</p></footer>
+
+  <!-- Login admin -->
+  <div id="login-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="login-title" aria-hidden="true">
+    <div class="modal-box modal-sm">
+      <div class="modal-header"><h3 id="login-title"><i class="fa-solid fa-shield-halved"></i> Akses Khusus Admin</h3><button class="modal-close-btn" type="button" data-close="login-modal" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button></div>
+      <form id="login-form">
+        <div class="form-group"><label for="admin-username">Username</label><input id="admin-username" type="text" placeholder="Username admin" required autocomplete="username" /></div>
+        <div class="form-group"><label for="admin-password">Password admin</label><input id="admin-password" type="password" placeholder="Masukkan password admin" required autocomplete="current-password" /></div>
+        <p id="login-error" class="error-text" hidden>Username atau password salah.</p>
+        <div class="form-actions"><button type="button" class="btn-secondary" data-close="login-modal">Batal</button><button type="submit" class="btn-primary">Masuk Admin</button></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tambah / edit aset -->
+  <div id="asset-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="asset-modal-title" aria-hidden="true">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><h3 id="asset-modal-title">Tambah Asset Baru</h3><button class="modal-close-btn" type="button" data-close="asset-modal" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button></div>
+      <form id="asset-form">
+        <input type="hidden" id="asset-id" />
+        <div class="form-row">
+          <div class="form-group flex-1"><label for="asset-category">Kategori Asset</label><select id="asset-category" required><option value="GD">Gerbong Datar (GD)</option><option value="GB">Gerbong Barang (GB)</option><option value="Commodity">Commodity</option></select></div>
+          <div class="form-group flex-2"><label for="asset-title">Nama Asset Utama</label><input id="asset-title" type="text" required maxlength="100" placeholder="Misal: Commodity" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group flex-1"><label for="asset-version">Versi rilisan</label><input id="asset-version" type="text" maxlength="30" placeholder="Misal: v1.0 / TBA" /></div>
+          <div class="form-group flex-1"><label for="asset-date">Tanggal rilisan</label><input id="asset-date" type="date" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group flex-1"><label for="asset-status">Ketersediaan aset</label><select id="asset-status"><option value="Available">Tersedia</option><option value="Coming Soon">Coming Soon</option></select></div>
+          <div class="form-group flex-1"><label for="asset-publication">Status publikasi</label><select id="asset-publication"><option value="published">Tampilkan ke publik</option><option value="draft">Simpan sebagai draft</option></select></div>
+        </div>
+        <div class="form-group"><label for="asset-desc">Deskripsi singkat</label><textarea id="asset-desc" rows="3" maxlength="1200" placeholder="Rincian aset, muatan, fitur, atau catatan rilisan..."></textarea></div>
+        <div class="form-row">
+          <div class="form-group flex-1"><label for="asset-format">Format aset</label><input id="asset-format" type="text" maxlength="80" placeholder="Google Drive Folder / .CDP / .ZIP" /></div>
+          <div class="form-group flex-1"><label for="asset-compatibility">Kompatibilitas</label><input id="asset-compatibility" type="text" maxlength="100" placeholder="Trainz Simulator 2022" /></div>
+        </div>
+        <div class="form-group"><label for="asset-download">Link folder utama (opsional)</label><input id="asset-download" type="url" placeholder="https://drive.google.com/drive/folders/..." /></div>
+        <div class="subfolder-management">
+          <div class="subfolder-header"><label><i class="fa-solid fa-folder-tree"></i> Sub-folder / link tujuan tambahan</label><button type="button" class="btn-small-add" id="add-subfolder-btn"><i class="fa-solid fa-plus"></i> Tambah Sub-Folder</button></div>
+          <p class="field-hint">Isi satu baris per folder. Link boleh kosong hanya jika statusnya Coming Soon.</p>
+          <div id="subfolder-inputs-container" class="subfolder-inputs-list"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group flex-1"><label for="asset-more-info">Link video / informasi tambahan</label><input id="asset-more-info" type="url" placeholder="https://youtube.com/..." /></div>
+          <div class="form-group flex-1"><label for="asset-cover">URL gambar cover (opsional)</label><input id="asset-cover" type="url" placeholder="https://..." /></div>
+        </div>
+        <div class="form-actions"><button type="button" class="btn-secondary" data-close="asset-modal">Batal</button><button type="submit" class="btn-primary" id="save-asset-btn">Simpan Asset</button></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Detail rilisan -->
+  <div id="detail-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="detail-title" aria-hidden="true">
+    <div class="modal-box modal-lg detail-modal-box">
+      <div class="modal-header"><h3 id="detail-title">Detail Asset</h3><button class="modal-close-btn" type="button" data-close="detail-modal" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button></div>
+      <div id="detail-content"></div>
+    </div>
+  </div>
+  <div id="toast" class="toast-message" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
