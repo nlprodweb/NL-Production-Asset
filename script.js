@@ -1,7 +1,7 @@
 'use strict';
 
 // Tempel URL Web App Apps Script yang berakhiran /exec di bawah ini.
-const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbytETVLRxhq1Cro30I59qzx0OjOqik_hR9B2L7roCRy15gfQ5mqLLFHr9dR0Mp7EoYi/exec';
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzGZ8x5CZLJKormFESMu_EhllbdDQPKKElpIWJqe2zHAF_w1TjRGVMOGZK9unCWjsAu/exec';
 const API_POLL_INTERVAL_MS = 1500; // 1,5 detik
 const API_MESSAGE_SOURCE = 'nl-production-api';
 const API_TOKEN_KEY = 'nlProduction.adminToken.v1';
@@ -147,18 +147,36 @@ function apiPost(action, payload = {}, token = '') {
   });
 }
 
-function applyAssetSnapshot(list) {
+function applyAssetSnapshot(list, options = {}) {
   if (!Array.isArray(list)) throw new Error('Format data dari Apps Script tidak valid.');
-  assets = list.map(normalizeAsset);
-  persistAssets(); // cache lokal saja; database Apps Script tetap menjadi sumber utama.
-  renderUserView();
-  renderAdminView();
+  const nextAssets = list.map(normalizeAsset);
+  const changed = JSON.stringify(assets) !== JSON.stringify(nextAssets);
+  assets = nextAssets;
+
+  // Simpan cache dan render hanya ketika data benar-benar berubah agar polling
+  // cepat tidak membuat halaman terus menggambar ulang tanpa alasan.
+  if (changed && options.persist !== false) persistAssets();
+  if (changed || options.forceRender === true) {
+    renderUserView();
+    renderAdminView();
+  }
+
+  // Hanya tab admin yang menyiarkan snapshot lengkap; tab pengunjung tidak
+  // boleh membagikan snapshot publik yang tidak berisi draft.
+  if (changed && options.broadcast === true && catalogSyncChannel) {
+    try { catalogSyncChannel.postMessage({ type: 'assets-snapshot', assets: nextAssets }); }
+    catch (error) { console.warn('Broadcast katalog tidak tersedia:', error); }
+  }
+  return changed;
 }
 
 async function refreshPublicCatalog(showErrors = false) {
   if (!isApiConfigured() || isAdminLoggedIn || apiMutationInProgress) return false;
+  const revisionAtStart = apiMutationRevision;
   try {
     const result = await apiGetJsonp('listPublic');
+    // Jangan biarkan response polling lama menimpa hasil simpan admin yang lebih baru.
+    if (revisionAtStart !== apiMutationRevision || apiMutationInProgress) return false;
     if (!result || !result.ok) throw new Error((result && result.error) || 'Gagal membaca katalog publik.');
     if (!isAdminLoggedIn) applyAssetSnapshot(result.assets || []);
     apiErrorToastShown = false;
@@ -176,8 +194,11 @@ async function refreshPublicCatalog(showErrors = false) {
 async function refreshAdminData(showErrors = false) {
   const token = getAdminToken();
   if (!isApiConfigured() || !token || apiMutationInProgress) return false;
+  const revisionAtStart = apiMutationRevision;
   try {
     const result = await apiPost('listAdmin', {}, token);
+    // Hasil baca yang dimulai sebelum penyimpanan selesai sudah kedaluwarsa.
+    if (revisionAtStart !== apiMutationRevision || apiMutationInProgress) return false;
     if (!result || !result.ok) {
       if (result && /sesi|token|login/i.test(result.error || '')) {
         clearAdminSession();
@@ -186,7 +207,7 @@ async function refreshAdminData(showErrors = false) {
       throw new Error((result && result.error) || 'Gagal membaca data admin.');
     }
     isAdminLoggedIn = true;
-    applyAssetSnapshot(result.assets || []);
+    applyAssetSnapshot(result.assets || [], { broadcast: true });
     apiErrorToastShown = false;
     return true;
   } catch (error) {
@@ -203,11 +224,13 @@ async function runAdminMutation(action, payload) {
   if (!isApiConfigured()) throw new Error('URL Apps Script belum dipasang di Script.js.');
   const token = getAdminToken();
   if (!token || !isAdminLoggedIn) throw new Error('Sesi admin tidak ditemukan. Silakan login kembali.');
+  if (apiMutationInProgress) throw new Error('Perubahan lain masih disimpan. Tunggu sebentar lalu coba lagi.');
+  apiMutationRevision += 1;
   apiMutationInProgress = true;
   try {
     const result = await apiPost(action, payload, token);
     if (!result || !result.ok) throw new Error((result && result.error) || 'Operasi database gagal.');
-    applyAssetSnapshot(result.assets || []);
+    applyAssetSnapshot(result.assets || [], { broadcast: true });
     return result;
   } finally {
     apiMutationInProgress = false;
@@ -376,6 +399,7 @@ let adminPublicationFilter = 'all';
 let isAdminLoggedIn = false;
 let toastTimer = null;
 let apiMutationInProgress = false;
+let apiMutationRevision = 0;
 let apiPollInProgress = false;
 let apiErrorToastShown = false;
 
@@ -753,7 +777,7 @@ async function handleLoginSubmit(event) {
       sessionStorage.setItem(SESSION_KEY, 'true');
     } catch (_) {}
     isAdminLoggedIn = true;
-    if (Array.isArray(result.assets)) applyAssetSnapshot(result.assets);
+    if (Array.isArray(result.assets)) applyAssetSnapshot(result.assets, { broadcast: true });
     el('login-form').reset();
     closeModal('login-modal');
     switchTab('admin');
@@ -790,6 +814,37 @@ function handleModalClick(event) {
   const closeButton = event.target.closest('[data-close]');
   if (closeButton) { closeModal(closeButton.dataset.close); return; }
   if (event.target.classList.contains('modal-backdrop')) closeModal(event.target.id);
+}
+
+// BroadcastChannel menyegarkan tab lain di browser yang sama segera setelah
+// admin menyimpan perubahan. Pengunjung di perangkat lain tetap memakai polling API.
+let catalogSyncChannel = null;
+try {
+  if ('BroadcastChannel' in window) {
+    catalogSyncChannel = new BroadcastChannel('nl-production-catalog-sync-v1');
+    catalogSyncChannel.addEventListener('message', event => {
+      const message = event.data;
+      if (!message || message.type !== 'assets-snapshot' || !Array.isArray(message.assets)) return;
+      const snapshot = isAdminLoggedIn
+        ? message.assets
+        : message.assets.filter(item => normalizePublication(item) === 'published');
+      applyAssetSnapshot(snapshot, { persist: false, broadcast: false });
+    });
+  }
+} catch (error) {
+  console.warn('Sinkronisasi antartab tidak tersedia:', error);
+}
+
+async function syncCatalogNow() {
+  if (!isApiConfigured() || apiMutationInProgress || apiPollInProgress) return false;
+  apiPollInProgress = true;
+  try {
+    const token = getAdminToken();
+    if (isAdminLoggedIn && token) return await refreshAdminData(false);
+    return await refreshPublicCatalog(false);
+  } finally {
+    apiPollInProgress = false;
+  }
 }
 
 function init() {
@@ -844,8 +899,9 @@ function init() {
   renderAdminView();
 
   if (isApiConfigured()) {
-    // Kunci juga sinkronisasi awal, supaya tidak bertabrakan dengan polling pertama.
-    const runInitialSync = async () => {
+    // Sinkronkan saat halaman dibuka dan kunci request agar tidak bertumpuk
+    // dengan polling 1,5 detik yang akan segera mulai.
+    (async () => {
       if (apiPollInProgress) return;
       apiPollInProgress = true;
       try {
@@ -860,20 +916,18 @@ function init() {
       } finally {
         apiPollInProgress = false;
       }
-    };
-    runInitialSync();
+    })();
 
-    // Polling tiap 1,5 detik. Tidak memulai request baru jika polling sebelumnya belum selesai.
-    window.setInterval(async () => {
-      if (apiMutationInProgress || apiPollInProgress) return;
-      apiPollInProgress = true;
-      try {
-        if (isAdminLoggedIn && getAdminToken()) await refreshAdminData(false);
-        else await refreshPublicCatalog(false);
-      } finally {
-        apiPollInProgress = false;
-      }
-    }, API_POLL_INTERVAL_MS);
+    // Polling untuk perangkat lain. Setiap request diserialkan agar tidak menumpuk.
+    window.setInterval(() => { void syncCatalogNow(); }, API_POLL_INTERVAL_MS);
+
+    // Saat kembali ke tab/halaman setelah ditinggal, ambil data tanpa menunggu interval.
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) void syncCatalogNow();
+    });
+    window.addEventListener('focus', () => { void syncCatalogNow(); });
+    window.addEventListener('pageshow', () => { void syncCatalogNow(); });
+    window.addEventListener('online', () => { void syncCatalogNow(); });
   }
 }
 
