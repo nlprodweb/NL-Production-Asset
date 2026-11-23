@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1120" />
+  <meta name="description" content="NL Production — Katalog resmi rilisan aset Trainz Simulator." />
+  <title>NL Production — Katalog Asset Trainz</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="script.js" defer></script>
+</head>
+<body data-page="public">
+  <main class="main">
+    <section id="user-view" class="view-section active" aria-label="Katalog Publik">
+      <!-- Maintenance Overlay (Gaya Journal Teachers Planner Tampilan HP) -->
+      <div class="maintenance-overlay" id="maintenance-overlay" hidden role="status" aria-live="polite">
+        <div class="maint-card">
+          <div class="maint-top">
+            <div class="maint-logo-wrap">NL</div>
+            <div class="maint-studio">OFFICIAL TRAINZ STUDIO</div>
+            <div class="maint-app">NL Production</div>
+            <div class="maint-tool" aria-hidden="true"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+            <span class="maint-badge"><span class="maint-dot"></span> Pemeliharaan Sistem</span>
+          </div>
+          <div class="maint-body">
+            <h1 id="maintenance-title" class="maint-title">Sedang Dalam Pemeliharaan</h1>
+            <p id="maintenance-message" class="maint-msg">Website NL Production sedang menjalani pemeliharaan. Silakan kembali beberapa saat lagi.</p>
+            <div class="maint-divider"></div>
+            <p class="maint-help">Kami sedang melakukan pembaruan katalog dan aset agar pengalaman akses berjalan lebih lancar.</p>
+            <div class="maint-actions">
+              <button type="button" id="maintenance-check-btn" class="maint-btn">
+                <i class="fa-solid fa-rotate"></i> Periksa Kembali
+              </button>
+              <span id="maintenance-check-status" class="maint-status">Halaman akan otomatis terbuka setelah pemeliharaan selesai.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <!-- Topbar dengan Brand + Jam Digital Emerald (Tanpa Sidebar) -->
+      <header class="topbar" id="beranda">
+        <a class="brand" href="#beranda" aria-label="NL Production beranda">
+          <div class="brand-logo">NL</div>
+          <div>
+            <div class="eyebrow">OFFICIAL TRAINZ STUDIO</div>
+            <h1>NL Production</h1>
+            <p class="subtitle">Etalase resmi rilisan addons Trainz Simulator.</p>
+          </div>
+        </a>
+        <div class="topbar-right">
+          <div class="clock" aria-label="Waktu dan tanggal Indonesia">
+            <div class="clock-icon-box">
+              <i class="fa-regular fa-clock" aria-hidden="true"></i>
+              <span class="clock-dot" aria-hidden="true"></span>
+            </div>
+            <div class="clock-info">
+              <time class="clock-time" id="site-time">00:00:00</time>
+              <div class="clock-date"><i class="fa-regular fa-calendar" aria-hidden="true"></i> <time id="site-date">Senin, 26 Oktober 2026</time></div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Running Text Ribbon -->
+      <div class="announcement-ticker" id="announcement-ticker" hidden aria-label="Informasi berjalan">
+        <div class="ticker-tag">
+          <i class="fa-solid fa-bullhorn" aria-hidden="true"></i>
+          <span>PENGUMUMAN</span>
+        </div>
+        <div class="ticker-viewport">
+          <div class="ticker-track" id="ticker-track">
+            <span id="ticker-copy-a">Informasi rilisan NL Production.</span>
+            <span id="ticker-copy-b" aria-hidden="true">Informasi rilisan NL Production.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Banner Emerald -->
+      <section class="hero">
+        <h2>Etalase Rilisan Addons Trainz Simulator</h2>
+        <p>
+          Koleksi resmi aset Trainz Simulator garapan <strong>NL Production</strong>. Temukan rilisan
+          Gerbong Datar (GD), Gerbong Barang (GB), hingga muatan Commodity lengkap dengan detail versi dan folder unduhan.
+        </p>
+        <span class="hero-badge"><i class="fa-solid fa-train" aria-hidden="true"></i> Trainz Simulator Asset Catalog</span>
+      </section>
+
+      <!-- Filter Kategori + Search Bar -->
+      <section class="catalog-bar" aria-label="Filter dan pencarian katalog">
+        <div class="category-tabs" role="group" aria-label="Kategori aset">
+          <button class="tab-btn active" type="button" data-filter="all">
+            <span>Semua</span>
+            <span class="tab-count" id="count-all">00</span>
+          </button>
+          <button class="tab-btn" type="button" data-filter="GD">
+            <span>Gerbong Datar (GD)</span>
+            <span class="tab-count" id="count-gd">00</span>
+          </button>
+          <button class="tab-btn" type="button" data-filter="GB">
+            <span>Gerbong Barang (GB)</span>
+            <span class="tab-count" id="count-gb">00</span>
+          </button>
+          <button class="tab-btn" type="button" data-filter="Commodity">
+            <span>Commodity</span>
+            <span class="tab-count" id="count-commodity">00</span>
+          </button>
+        </div>
+
+        <div class="catalog-search-wrap">
+          <label class="search-field" for="catalog-search">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input id="catalog-search" type="search" placeholder="Cari aset, kategori, atau subfolder..." autocomplete="off" />
+            <kbd>/</kbd>
+          </label>
+          <span class="result-counter" id="catalog-count">00 aset</span>
+        </div>
+      </section>
+
+      <!-- Asset Cards Grid -->
+      <div class="asset-grid" id="asset-grid" aria-live="polite"></div>
+
+      <div class="empty-state" id="empty-assets" hidden>
+        <div class="empty-state-icon"><i class="fa-regular fa-folder-open" aria-hidden="true"></i></div>
+        <h3>Aset tidak ditemukan</h3>
+        <p>Tidak ada rilisan yang cocok dengan kata kunci atau kategori yang dipilih.</p>
+        <button type="button" class="btn-outline" id="reset-catalog">
+          <i class="fa-solid fa-rotate-left"></i> Reset Pencarian
+        </button>
+      </div>
+
+      <!-- Release Information Notice -->
+      <section class="release-notice" id="public-note">
+        <div class="notice-icon"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></div>
+        <div class="notice-content">
+          <strong id="release-info-title">Informasi rilisan</strong>
+          <p id="release-info-text">Link yang berstatus Coming Soon belum bisa dibuka. Informasi versi, kompatibilitas, dan detail aset ditampilkan pada tombol detail setiap rilisan.</p>
+        </div>
+      </section>
+
+      <footer class="page-footer">
+        © <span id="current-year">2026</span> NL Production — Trainz Simulator Addons Catalog
+      </footer>
+    </section>
+  </main>
+
+  <!-- Modal Detail Rilisan -->
+  <div id="detail-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="detail-title" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-head">
+        <h3 id="detail-title">Detail Asset</h3>
+        <button class="modal-close" type="button" data-close="detail-modal" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="detail-content"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast-message" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

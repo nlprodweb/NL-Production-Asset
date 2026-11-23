@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1120" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Admin Workspace — NL Production</title>
+  <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="../script.js" defer></script>
+</head>
+<body data-page="admin">
+  <main class="main">
+    <header class="topbar">
+      <a class="brand" href="../">
+        <div class="brand-logo brand-logo-admin">NL</div>
+        <div>
+          <div class="eyebrow">PANEL PENGELOLA</div>
+          <h1>Admin Workspace</h1>
+          <p class="subtitle">Kelola rilisan aset, tautan Google Drive, running text, dan mode maintenance.</p>
+        </div>
+      </a>
+      <div class="topbar-right">
+        <a class="btn-outline btn-sm" href="../">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Katalog Publik
+        </a>
+        <div class="clock" aria-label="Waktu dan tanggal Indonesia">
+          <div class="clock-icon-box">
+            <i class="fa-regular fa-clock" aria-hidden="true"></i>
+            <span class="clock-dot" aria-hidden="true"></span>
+          </div>
+          <div class="clock-info">
+            <time class="clock-time" id="site-time">00:00:00</time>
+            <div class="clock-date"><i class="fa-regular fa-calendar" aria-hidden="true"></i> <time id="site-date">Senin, 26 Oktober 2026</time></div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Admin Login View -->
+    <section id="admin-login-view" class="view-section active" aria-label="Login Admin">
+      <div class="login-wrapper">
+        <div class="login-card">
+          <div class="login-header">
+            <div class="login-badge-icon"><i class="fa-solid fa-lock" aria-hidden="true"></i></div>
+            <div class="eyebrow">AKSES TERBATAS</div>
+            <h1>Masuk Panel Admin</h1>
+            <p>Login untuk mengelola daftar aset, tautan Google Drive, running text, dan mode maintenance.</p>
+          </div>
+          <form id="login-form">
+            <div class="form-group">
+              <label for="admin-username">Username</label>
+              <input id="admin-username" type="text" placeholder="Masukkan username admin" required autocomplete="username" />
+            </div>
+            <div class="form-group">
+              <label for="admin-password">Password</label>
+              <div class="password-input-wrap">
+                <input id="admin-password" type="password" placeholder="Masukkan password admin" required autocomplete="current-password" />
+                <button type="button" class="password-toggle-btn" id="toggle-password-btn" aria-label="Tampilkan atau sembunyikan password" title="Tampilkan / Sembunyikan Password">
+                  <i class="fa-regular fa-eye" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+            <p id="login-error" class="error-banner" hidden></p>
+            <button type="submit" class="btn-primary btn-block" id="login-submit-btn">
+              <i class="fa-solid fa-right-to-bracket"></i> Masuk ke Panel Admin
+            </button>
+          </form>
+          <div class="login-foot">
+            <a href="../" class="text-link"><i class="fa-solid fa-arrow-left"></i> Kembali ke Katalog Publik</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Admin Dashboard View -->
+    <section id="admin-view" class="view-section" aria-label="Panel Pengelola Asset">
+      <section class="hero">
+        <h2>Manajemen Katalog &amp; Website</h2>
+        <p>Tambah atau perbarui rilisan aset, atur status publikasi, dan kelola tampilan publik secara langsung.</p>
+        <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;position:relative;z-index:1;">
+          <button class="btn-primary" id="add-asset-btn" type="button">
+            <i class="fa-solid fa-plus"></i> Tambah Asset Baru
+          </button>
+          <button class="btn-danger-outline" id="logout-btn" type="button">
+            <i class="fa-solid fa-right-from-bracket"></i> Keluar
+          </button>
+        </div>
+      </section>
+
+      <!-- KPI Strip -->
+      <div class="stats stats-4" aria-label="Ringkasan katalog">
+        <div class="stat">
+          <div class="stat-icon stat-icon-sky"><i class="fa-solid fa-boxes-stacked"></i></div>
+          <div class="stat-label">Total Aset</div>
+          <div class="stat-value" id="stat-total">00</div>
+        </div>
+        <div class="stat">
+          <div class="stat-icon"><i class="fa-solid fa-eye"></i></div>
+          <div class="stat-label">Ditampilkan Publik</div>
+          <div class="stat-value" id="stat-published">00</div>
+        </div>
+        <div class="stat">
+          <div class="stat-icon stat-icon-amber"><i class="fa-solid fa-eye-slash"></i></div>
+          <div class="stat-label">Draft / Tersembunyi</div>
+          <div class="stat-value" id="stat-draft">00</div>
+        </div>
+        <div class="stat">
+          <div class="stat-icon"><i class="fa-solid fa-folder-tree"></i></div>
+          <div class="stat-label">Total Folder Tujuan</div>
+          <div class="stat-value" id="stat-folders">00</div>
+        </div>
+      </div>
+
+      <!-- Asset Table Section -->
+      <section class="panel-surface">
+        <div class="panel-toolbar">
+          <label class="search-field" for="admin-search">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input id="admin-search" type="search" placeholder="Cari aset di panel admin..." autocomplete="off" />
+          </label>
+          <label class="select-inline">
+            <span>Publikasi</span>
+            <select id="admin-publish-filter">
+              <option value="all">Semua status</option>
+              <option value="published">Publik</option>
+              <option value="draft">Draft</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Kategori</th>
+                <th>Nama Asset</th>
+                <th>Folder</th>
+                <th>Ketersediaan</th>
+                <th>Publikasi</th>
+                <th class="col-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="admin-table-body"></tbody>
+          </table>
+        </div>
+        <p class="table-empty" id="admin-empty" hidden>Tidak ada aset yang cocok dengan pencarian atau filter ini.</p>
+      </section>
+
+      <!-- Public Site Settings -->
+      <section class="panel-surface settings-surface" aria-labelledby="site-settings-title">
+        <div class="settings-top">
+          <div>
+            <div class="eyebrow">PENGATURAN WEBSITE</div>
+            <h3 id="site-settings-title">Pengaturan Tampilan Publik</h3>
+            <p>Ubah catatan rilisan, running text, dan mode maintenance yang tampil untuk pengunjung.</p>
+          </div>
+          <span class="sync-badge"><i class="fa-solid fa-cloud"></i> Tersimpan Online</span>
+        </div>
+
+        <form id="site-settings-form">
+          <div class="settings-columns">
+            <div class="setting-box">
+              <div class="setting-box-head">
+                <i class="fa-solid fa-circle-info"></i>
+                <div><h4>Informasi Rilisan</h4><p>Tampil di bagian bawah katalog publik.</p></div>
+              </div>
+              <div class="form-group">
+                <label for="release-info-title-input">Judul informasi</label>
+                <input id="release-info-title-input" type="text" maxlength="80" required />
+              </div>
+              <div class="form-group">
+                <label for="release-info-text-input">Isi informasi</label>
+                <textarea id="release-info-text-input" rows="4" maxlength="1000" required></textarea>
+              </div>
+            </div>
+
+            <div class="setting-box">
+              <div class="setting-box-head">
+                <i class="fa-solid fa-bullhorn"></i>
+                <div><h4>Running Text</h4><p>Teks berjalan di bagian atas website.</p></div>
+              </div>
+              <label class="switch-row" for="ticker-enabled">
+                <input id="ticker-enabled" type="checkbox" />
+                <span><strong>Aktifkan running text</strong><small>Matikan jika tidak ingin menampilkan pengumuman.</small></span>
+              </label>
+              <div class="form-group">
+                <label for="ticker-text-input">Isi running text</label>
+                <textarea id="ticker-text-input" rows="4" maxlength="500" placeholder="Contoh: Asset baru segera hadir di NL Production."></textarea>
+              </div>
+            </div>
+
+            <div class="setting-box setting-box-warn">
+              <div class="setting-box-head">
+                <i class="fa-solid fa-screwdriver-wrench"></i>
+                <div><h4>Mode Maintenance</h4><p>Menutup sementara akses halaman publik.</p></div>
+              </div>
+              <label class="switch-row" for="maintenance-enabled">
+                <input id="maintenance-enabled" type="checkbox" />
+                <span><strong>Aktifkan mode maintenance</strong><small>Halaman /admin tetap bisa diakses kapan saja.</small></span>
+              </label>
+              <div class="form-group">
+                <label for="maintenance-title-input">Judul halaman</label>
+                <input id="maintenance-title-input" type="text" maxlength="100" required />
+              </div>
+              <div class="form-group">
+                <label for="maintenance-message-input">Pesan maintenance</label>
+                <textarea id="maintenance-message-input" rows="3" maxlength="1000" required></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-foot">
+            <p><i class="fa-solid fa-circle-check"></i> Perubahan otomatis tersinkron ke semua pengunjung setelah disimpan.</p>
+            <button class="btn-primary" id="save-site-settings-btn" type="submit">
+              <i class="fa-solid fa-floppy-disk"></i> Simpan Pengaturan
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <p class="admin-footnote"><i class="fa-solid fa-database"></i> Terhubung ke Google Sheets melalui Google Apps Script.</p>
+    </section>
+
+    <footer class="page-footer">
+      © <span id="current-year">2026</span> NL Production — Admin Workspace (/admin)
+    </footer>
+  </main>
+
+  <!-- Modal Tambah / Edit Aset -->
+  <div id="asset-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="asset-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-head">
+        <h3 id="asset-modal-title">Tambah Asset Baru</h3>
+        <button class="modal-close" type="button" data-close="asset-modal" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="asset-form">
+        <input type="hidden" id="asset-id" />
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="asset-category">Kategori Asset</label>
+            <select id="asset-category" required>
+              <option value="GD">Gerbong Datar (GD)</option>
+              <option value="GB">Gerbong Barang (GB)</option>
+              <option value="Commodity">Commodity</option>
+            </select>
+          </div>
+          <div class="form-group flex-2">
+            <label for="asset-title">Nama Asset Utama</label>
+            <input id="asset-title" type="text" required maxlength="100" placeholder="Misal: GD New Generation" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group flex-1"><label for="asset-version">Versi rilisan</label><input id="asset-version" type="text" maxlength="30" placeholder="Misal: v1.0 / TBA" /></div>
+          <div class="form-group flex-1"><label for="asset-date">Tanggal rilisan</label><input id="asset-date" type="date" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group flex-1"><label for="asset-status">Ketersediaan aset</label><select id="asset-status"><option value="Available">Tersedia</option><option value="Coming Soon">Coming Soon</option></select></div>
+          <div class="form-group flex-1"><label for="asset-publication">Status publikasi</label><select id="asset-publication"><option value="published">Tampilkan ke publik</option><option value="draft">Simpan sebagai draft</option></select></div>
+        </div>
+        <div class="form-group"><label for="asset-desc">Deskripsi singkat</label><textarea id="asset-desc" rows="3" maxlength="1200" placeholder="Rincian aset, muatan, fitur, atau catatan rilisan..."></textarea></div>
+        <div class="form-row">
+          <div class="form-group flex-1"><label for="asset-format">Format aset</label><input id="asset-format" type="text" maxlength="80" placeholder="Google Drive Folder / .CDP / .ZIP" /></div>
+          <div class="form-group flex-1"><label for="asset-compatibility">Kompatibilitas</label><input id="asset-compatibility" type="text" maxlength="100" placeholder="Trainz Simulator 2022" /></div>
+        </div>
+        <div class="form-group"><label for="asset-download">Link folder utama (opsional)</label><input id="asset-download" type="url" placeholder="https://drive.google.com/drive/folders/..." /></div>
+        <div class="subfolder-box">
+          <div class="subfolder-head">
+            <label><i class="fa-solid fa-folder-tree"></i> Sub-folder / link tujuan tambahan</label>
+            <button type="button" class="btn-outline btn-sm" id="add-subfolder-btn"><i class="fa-solid fa-plus"></i> Tambah Sub-Folder</button>
+          </div>
+          <p class="field-hint">Isi satu baris per folder. Link boleh kosong hanya jika statusnya Coming Soon.</p>
+          <div id="subfolder-inputs-container" class="subfolder-list"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group flex-1"><label for="asset-more-info">Link video / informasi tambahan</label><input id="asset-more-info" type="url" placeholder="https://youtube.com/..." /></div>
+          <div class="form-group flex-1"><label for="asset-cover">URL gambar cover (opsional)</label><input id="asset-cover" type="url" placeholder="https://..." /></div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-outline" data-close="asset-modal">Batal</button>
+          <button type="submit" class="btn-primary" id="save-asset-btn">Simpan Asset</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast-message" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
